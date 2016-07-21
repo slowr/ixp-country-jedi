@@ -116,6 +116,9 @@ def main():
    MeasurementEnhance.setCacheOnly( True )
    if not os.path.exists(RESULTDIR):
       os.makedirs(RESULTDIR)
+
+   outdatatraixroute = []
+   
    def process_msm( msm_spec, protocol ):
       # msm_spec has msm_id
       msm_id = msm_spec['msm_id']
@@ -130,6 +133,11 @@ def main():
          data = filter_cruft( data )
          assert 'edst' not in repr( data ), data
          tr = ripe.atlas.sagan.TracerouteResult( data )
+         ip_list = tr.ip_path
+         hops = []
+         for i in ip_list:
+            if len(i) > 0:
+               hops.append(i[0])
          tracetxt = MeasurementPrint.trace2txt( data )
          src_prb_id = data['prb_id']
          src_prb = probes_by_id[ src_prb_id ]
@@ -179,6 +187,14 @@ def main():
             'tracetxt': tracetxt,
             'locations': list(locs)
          } )
+
+         outdatatraixroute.append( {
+            'msm_id': msm_id,
+            'ip_path' : hops, 
+            'src_prb_id' : src_prb_id, 
+            'dst_prb_id': dst_prb_id 
+         } )
+
       with open(outfilename,'w') as outfile:
          json.dump( outdata, outfile, indent=2 )
    ## loop over measurements
@@ -188,6 +204,9 @@ def main():
         process_msm(m,4)
    for m in msms['v6']:
         process_msm(m,6)
+
+   with open("traixroute.json",'w') as outfile:
+       json.dump(outdatatraixroute, outfile, indent=2 )
 #   msm_list = msms['v4'] + msms['v6']
 #   for m in msm_list:
 #   child_pid = os.fork()
