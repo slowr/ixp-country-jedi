@@ -233,6 +233,7 @@ def do_incountry_printresult( data ):
 
 ### ixpcountry
 def init_ixpcountry( basedata, probes ):
+   
    rows = []
    for p in PROBES:
       rows.append({
@@ -249,18 +250,30 @@ def init_ixpcountry( basedata, probes ):
          'cells': [],
       }
       d['details'][proto] = {}
+
+
    return d
 
 def do_ixpcountry_entry( ixpcountry, proto, data ):
+
    my_cells = ixpcountry['summary'][proto]['cells']
-   my_cells.append({
-      'row': data['src_prb_id'],
-      'col': data['dst_prb_id'],
-      'data': {'in_country': data['in_country'], 'via_ixp': data['via_ixp']}
-   })
+   if 'traixroute' in data.keys():
+
+      my_cells.append({
+         'row': data['src_prb_id'],
+         'col': data['dst_prb_id'],
+         'data': {'in_country': data['in_country'], 'via_ixp': data['via_ixp'], 'traixroute' : data['traixroute']}
+      })
+   else:
+      my_cells.append({
+         'row': data['src_prb_id'],
+         'col': data['dst_prb_id'],
+         'data': {'in_country': data['in_country'], 'via_ixp': data['via_ixp']}
+      })
    details = ixpcountry['details'][proto]
    detail_key = '.'.join(map(str,[ data['src_prb_id'] , data['dst_prb_id'] ]))
    details[ detail_key ] = data
+
 
 def do_ixpcountry_printresult( ixpcountry ):
    VIZPATH='./analysis/ixpcountry/'
@@ -274,6 +287,7 @@ def do_ixpcountry_printresult( ixpcountry ):
          json.dump( ixpcountry['summary'][ proto ], outfile )
       for detail_key in ixpcountry['details'][ proto ].keys():
          with open('%s/%s.%s.json' % ( VIZDETAILSPATH, detail_key, proto ), 'w') as outfile:
+            
             json.dump( ixpcountry['details'][ proto ][ detail_key ], outfile )
    print "IXPCOUNTRY viz results available in %s" % ( VIZPATH )
 
